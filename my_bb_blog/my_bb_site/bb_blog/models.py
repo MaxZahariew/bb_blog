@@ -1,15 +1,23 @@
 from django.db import models
+from django.db.models import CharField
 from django.utils import timezone
 from django.contrib.auth.models import User
 
 
 # Create your models here.
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()\
+            .filter(status=Post.Status.PUBLISHED)
+
 
 class Post(models.Model):
     class Status(models.TextChoices):
         DRAFT = 'DF', 'Draft'
         PUBLISHED = 'PB', 'Published'
 
+    objects = models.Manager()  # менеджер по умолчанию
+    published = PublishedManager()  # менеджер для постов PUBLISHED
     title = models.CharField(max_length=250)
     slug = models.SlugField(max_length=250)
     author = models.ForeignKey(User,
@@ -29,5 +37,5 @@ class Post(models.Model):
             models.Index(fields=['-publish']),
         ]
 
-    def __str__(self) -> str:
+    def __str__(self) -> CharField:
         return self.title
